@@ -1,4 +1,4 @@
-# docker-canis-base
+# Canis Base
 
 Two images for the DataCite Canis family of Rails services.
 
