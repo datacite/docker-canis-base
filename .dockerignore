@@ -1,0 +1,19 @@
+# Ignore files that are not needed for building the base image
+.git
+.gitignore
+README.md
+*.md
+LICENSE
+examples/
+.github/
+Dockerfile*
+.dockerignore
+
+# Common unnecessary files
+**/.DS_Store
+**/*~
+**/*.log
+tmp/
+log/
+vendor/bundle/   # if present in context
+node_modules/
