@@ -58,9 +58,6 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            # datacite/canis-base:latest
-            # datacite/canis-base:${{ steps.version.outputs.version }}
-            # datacite/canis-base:${{ steps.version.outputs.sha }}
             ghcr.io/datacite/canis-base:latest
             ghcr.io/datacite/canis-base:${{ steps.version.outputs.version }}
             ghcr.io/datacite/canis-base:${{ steps.version.outputs.sha }}
