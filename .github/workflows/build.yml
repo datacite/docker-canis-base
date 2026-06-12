@@ -16,27 +16,34 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker
+          # Use the plain 'docker' driver (instead of the default 'docker-container' driver
+          # that is selected when 'platforms:' is specified). The docker driver makes local
+          # image tags (canis-base:pr) from the previous step immediately visible to
+          # subsequent FROM instructions in the same job. The container driver keeps
+          # the image only in its internal cache, causing the next build to try to
+          # pull "canis-base:pr" from Docker Hub (library/canis-base:pr) and fail with
+          # "pull access denied".
 
-      # Build slim base (no push on PRs — only verification)
+      # Build slim base (verification only — no push)
       - name: Build slim base
         uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile
-          platforms: linux/amd64
           push: false
           load: true
           tags: canis-base:pr
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # Build tools variant on top of the just-built base (no push on PRs)
+      # Build tools variant on top of the local base tag (verification only — no push)
       - name: Build tools variant
         uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile.tools
-          platforms: linux/amd64
           push: false
           build-args: |
             BASE_IMAGE=canis-base:pr
