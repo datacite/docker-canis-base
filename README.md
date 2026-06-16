@@ -18,23 +18,6 @@ Two images for the DataCite Canis family of Rails services.
 
 ## Quick Start
 
-### CI vs Release
-
-- **On pull requests and pushes to main**: The `build.yml` workflow runs. It builds both images to verify they compile correctly, **but does not publish** anything.
-- **On GitHub Release** (recommended): The `release.yml` workflow runs. It builds and **publishes** both images to GHCR with proper semantic tags.
-
-This is the standard DataCite pattern (see e.g. Levriero).
-
-### Versioning (Semantic)
-
-All DataCite Docker images use **semantic versioning** (`MAJOR.MINOR.PATCH`).
-
-To release:
-
-1. Go to the repository → **Releases** → **Draft a new release**.
-2. Create a new tag in semver format, e.g. `1.2.3`.
-3. Publish the release.
-
 The release workflow will automatically build and push both images to **both Docker Hub (`datacite/...`) and GHCR (`ghcr.io/datacite/...`)** using `github.ref_name` (the tag, e.g. `v1.2.3`) + the commit hash.
 
 ### Build both images locally (for testing)
