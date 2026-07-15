@@ -59,12 +59,10 @@ RUN rm -f /etc/service/nginx/down && \
 COPY vendor/docker/ntp.conf /etc/ntp.conf
 COPY vendor/docker/00_app_env.conf /etc/nginx/conf.d/00_app_env.conf
 COPY vendor/docker/10_ssh.sh /etc/my_init.d/10_ssh.sh
-COPY vendor/docker/90_migrate.sh /etc/my_init.d/90_migrate.sh
 COPY vendor/docker/shoryuken.sh /etc/service/shoryuken/run
 
 # Make sure init scripts are executable
 RUN chmod +x /etc/my_init.d/10_ssh.sh \
-             /etc/my_init.d/90_migrate.sh \
              /etc/service/shoryuken/run
 
 WORKDIR /home/app/webapp
