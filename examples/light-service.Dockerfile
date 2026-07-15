@@ -1,20 +1,25 @@
 # syntax=docker/dockerfile:1.7
 #
-# Example for a lighter service using only the slim core base
+# Example for a Canis service using only the slim core base
+# (e.g. events, levriero, sashimi, volpino — after Ruby 4)
+# Base already provides: passenger/nginx, app_env, ntp, root SSH, guarded shoryuken
 
-FROM ghcr.io/datacite/canis-base:v1.2.3
+FROM ghcr.io/datacite/canis-base:1.2.3
 
 LABEL maintainer="support@datacite.org"
 
-# Add only what is unique to your service here
+# Service-only packages (examples)
+# RUN apt-get update && apt-get install -y --no-install-recommends \
+#       default-libmysqlclient-dev imagemagick && \
+#     apt-get clean && rm -rf /var/lib/apt/lists/*
+
 COPY vendor/docker/webapp.conf /etc/nginx/sites-enabled/webapp.conf
-COPY vendor/docker/00_app_env.conf /etc/nginx/conf.d/00_app_env.conf
 
-RUN mkdir -p /etc/service/shoryuken
-COPY vendor/docker/shoryuken.sh /etc/service/shoryuken/run
+# Optional: enable migrations on boot (kept in the app, not the base)
+# COPY vendor/docker/90_migrate.sh /etc/my_init.d/90_migrate.sh
 
-COPY vendor/docker/10_ssh.sh /etc/my_init.d/10_ssh.sh
-COPY vendor/docker/90_migrate.sh /etc/my_init.d/90_migrate.sh
+# Optional: override base shoryuken/ssh/app_env only if this service differs
+# COPY vendor/docker/shoryuken.sh /etc/service/shoryuken/run
 
 COPY . /home/app/webapp/
 RUN mkdir -p tmp/pids tmp/storage && \
