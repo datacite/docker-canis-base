@@ -14,32 +14,22 @@ LABEL maintainer="support@datacite.org" \
 ENV HOME=/home/app \
     LC_ALL=en_US.UTF-8 \
     LANG=en_US.UTF-8 \
-    NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx/sites-enabled \
     DEBIAN_FRONTEND=noninteractive
 
 # ============================================================================
-# Core system packages + native gem build dependencies
+# Core system packages + common native gem build dependencies
 # ============================================================================
-RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-
 RUN apt-get update && apt-get upgrade -y -o Dpkg::Options::="--force-confold" && \
     apt-get install -y --no-install-recommends \
-      # Common operational / debugging tools
-      ntp wget ca-certificates gnupg tzdata shared-mime-info \
-      nano tmux gettext unzip libxml2-utils imagemagick git curl jq \
-      lsb-release \
-      # Critical for Rails native extensions (mysql2, nokogiri, etc.)
-      build-essential default-libmysqlclient-dev libxslt1-dev \
-      libyaml-dev zlib1g-dev pkg-config \
-      # Graphics / image processing libs (for rmagick, vips, etc.)
-      libpng-dev libjpeg-dev libcairo2-dev libfreetype6-dev fontconfig \
+      ntp wget ca-certificates tzdata shared-mime-info \
+      nano tmux \
+      build-essential libxslt1-dev libyaml-dev zlib1g-dev pkg-config \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # ============================================================================
-# User permissions + git safety
+# User permissions
 # ============================================================================
-RUN usermod -a -G docker_env app && \
-    git config --global --add safe.directory /home/app/webapp
+RUN usermod -a -G docker_env app
 
 # ============================================================================
 # Ruby 4 + modern Bundler baseline
