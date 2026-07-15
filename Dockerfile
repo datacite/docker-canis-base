@@ -13,8 +13,7 @@ LABEL maintainer="support@datacite.org" \
 
 ENV HOME=/home/app \
     LC_ALL=en_US.UTF-8 \
-    LANG=en_US.UTF-8 \
-    DEBIAN_FRONTEND=noninteractive
+    LANG=en_US.UTF-8
 
 # ============================================================================
 # Core system packages + common native gem build dependencies
