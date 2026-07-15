@@ -55,6 +55,10 @@ COPY vendor/docker/shoryuken.sh /etc/service/shoryuken/run
 RUN chmod +x /etc/my_init.d/10_ssh.sh \
              /etc/service/shoryuken/run
 
+# Enable SSH (fleet standard: root + PUBLIC_KEY via 10_ssh.sh)
+RUN rm -f /etc/service/sshd/down && \
+    /etc/my_init.d/00_regen_ssh_host_keys.sh
+
 WORKDIR /home/app/webapp
 CMD ["/sbin/my_init"]
 EXPOSE 80
