@@ -3,24 +3,22 @@
 # DataCite Canis Tools Image
 #
 # Builds on top of the slim canis-base and adds heavy operational tooling.
-# This image is intended primarily for Lupo and any services that might/will need
-# Percona Toolkit and AWS CLI at runtime.
+# Intended mainly for Lupo (Percona Toolkit + AWS CLI at runtime).
 
 ARG BASE_IMAGE=ghcr.io/datacite/canis-base:latest
 FROM ${BASE_IMAGE}
 
 LABEL maintainer="support@datacite.org" \
       org.opencontainers.image.source="https://github.com/datacite/docker-canis-base" \
-      org.opencontainers.image.description="DataCite Canis Base + Tools (Percona + AWS CLI + Dockerize + ...)"
-
-ENV DOCKERIZE_VERSION=v0.6.0
+      org.opencontainers.image.description="DataCite Canis Base + Tools (Percona + AWS CLI)"
 
 # ============================================================================
 # Percona Toolkit 3.7.1 + Perl DBI libraries
 # ============================================================================
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-      libdbd-mysql-perl libdbi-perl libterm-readkey-perl libio-socket-ssl-perl && \
+      libdbd-mysql-perl libdbi-perl libterm-readkey-perl libio-socket-ssl-perl \
+      unzip && \
     wget -q https://downloads.percona.com/downloads/percona-toolkit/3.7.1/binary/debian/noble/x86_64/percona-toolkit_3.7.1-3.noble_amd64.deb -O /tmp/percona-toolkit.deb && \
     dpkg -i /tmp/percona-toolkit.deb || apt-get install -y -f --no-install-recommends && \
     rm -f /tmp/percona-toolkit.deb && \
@@ -32,14 +30,6 @@ RUN apt-get update && \
 RUN wget -q https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -O /tmp/awscliv2.zip && \
     unzip -q /tmp/awscliv2.zip -d /tmp && \
     /tmp/aws/install && \
-    rm -rf /tmp/awscliv2.zip /tmp/aws && \
-    apt-get clean
-
-# ============================================================================
-# dockerize (wait-for pattern used by some services)
-# ============================================================================
-RUN wget -q https://github.com/jwilder/dockerize/releases/download/${DOCKERIZE_VERSION}/dockerize-linux-amd64-${DOCKERIZE_VERSION}.tar.gz -O /tmp/dockerize.tar.gz && \
-    tar -C /usr/local/bin -xzf /tmp/dockerize.tar.gz && \
-    rm -f /tmp/dockerize.tar.gz
+    rm -rf /tmp/awscliv2.zip /tmp/aws
 
 WORKDIR /home/app/webapp
