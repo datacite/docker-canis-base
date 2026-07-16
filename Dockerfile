@@ -43,7 +43,6 @@ RUN rm -f /etc/service/nginx/down && \
     mkdir -p /etc/nginx/templates /etc/service/shoryuken /etc/my_init.d /etc/nginx/conf.d
 
 # Copy common configuration and scripts from the base repo's vendor/docker/.
-# These match the layout used in other DataCite repos (lupo, levriero, etc.).
 # Apps can still override any of these by COPY-ing their own version later in their Dockerfile.
 COPY vendor/docker/ntp.conf /etc/ntp.conf
 COPY vendor/docker/00_app_env.conf /etc/nginx/conf.d/00_app_env.conf
@@ -54,7 +53,7 @@ COPY vendor/docker/shoryuken.sh /etc/service/shoryuken/run
 RUN chmod +x /etc/my_init.d/10_ssh.sh \
              /etc/service/shoryuken/run
 
-# Enable SSH (fleet standard: root + PUBLIC_KEY via 10_ssh.sh)
+# Enable SSH (root + PUBLIC_KEY via 10_ssh.sh)
 RUN rm -f /etc/service/sshd/down && \
     /etc/my_init.d/00_regen_ssh_host_keys.sh
 
