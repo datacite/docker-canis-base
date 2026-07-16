@@ -1,51 +1,32 @@
 # Canis Base
 
-Shared Docker images for DataCite Canis Rails services (Lupo, Levriero, Events, Volpino, Sashimi).
+Shared Docker image for DataCite Canis Rails services (Lupo, Levriero, Events, Volpino, Sashimi).
 
-### Images
+### Image
 
-| Image | Purpose | Recommended for |
-|-------|---------|-----------------|
-| `canis-base` | Slim shared foundation | Most services |
-| `canis-base-tools` | `canis-base` + Percona Toolkit + AWS CLI | Lupo (ops extras) |
+| Image | Purpose |
+|-------|---------|
+| `canis-base` | Shared Phusion/Passenger + Ruby foundation |
 
 ### Philosophy
 
-- Keep the core base to the **intersection** of shared needs across Canis services.
-- Put Lupo-heavy operational tooling (Percona Toolkit, AWS CLI) in the tools image.
-- Service-specific packages and scripts stay in each app's Dockerfile.
+- Keep the base to the **intersection** of shared needs across Canis services.
+- Service-specific packages and scripts stay in each app's Dockerfile (e.g. Lupo's Percona Toolkit and AWS CLI).
 - Match existing fleet contracts (SSH, Passenger env, NTP, Shoryuken guards) so adoption is a thin Dockerfile change.
 
 ## Quick start
 
-### Build both images locally
+### Build locally
 
 ```bash
-# 1. Slim core base
 docker buildx build \
   --platform linux/amd64 \
   --tag canis-base:local \
   --load \
   -f Dockerfile .
-
-# 2. Tools variant on top of the local base
-docker buildx build \
-  --platform linux/amd64 \
-  --tag canis-base-tools:local \
-  --load \
-  --build-arg BASE_IMAGE=canis-base:local \
-  -f Dockerfile.tools .
 ```
 
 ### Usage in application Dockerfiles
-
-**Lupo:**
-
-```dockerfile
-FROM ghcr.io/datacite/canis-base-tools:1.2.3
-```
-
-**Other Canis services:**
 
 ```dockerfile
 FROM ghcr.io/datacite/canis-base:1.2.3
@@ -53,9 +34,10 @@ FROM ghcr.io/datacite/canis-base:1.2.3
 
 Pin to a full commit SHA for maximum reproducibility if needed.
 
-## What's in each image
+Lupo and other services add only what they need after `FROM` (see `examples/`).
 
-**`canis-base`**
+## What's in the image
+
 - `phusion/passenger-ruby40` (Ubuntu 24.04)
 - Ruby 4.0.1 + rubygems 3.5.6 + bundler 2.6.9
 - Passenger + Nginx enabled; default site removed
@@ -66,11 +48,7 @@ Pin to a full commit SHA for maximum reproducibility if needed.
 - Baked shared config/scripts (see below)
 - Guarded Shoryuken runit service
 
-**`canis-base-tools`** (on top of base)
-- Percona Toolkit 3.7.1 + Perl DBI libraries
-- AWS CLI v2 (e.g. Lupo Passenger → CloudWatch metrics)
-
-Not in either image (add in the app when needed): MySQL client headers, ImageMagick/graphics libs, Chrome, dockerize, migrate-on-boot scripts.
+**Not in the base** (add in the app when needed): Percona Toolkit, AWS CLI, MySQL client headers, ImageMagick/graphics libs, Chrome, dockerize, migrate-on-boot scripts.
 
 ## Baked `vendor/docker/` files
 
@@ -97,26 +75,24 @@ Not in either image (add in the app when needed): MySQL client headers, ImageMag
 
 ## Tagging
 
-Releases are driven by git tags. Tags pushed for both images typically include `latest`, the version tag, and the commit SHA. Prefer pinning apps to a version tag:
+Releases are driven by git tags. Tags typically include `latest`, the version tag, and the commit SHA. Prefer pinning apps to a version tag:
 
 ```dockerfile
 FROM ghcr.io/datacite/canis-base:1.2.3
 ```
 
-`canis-base-tools` is built against the same commit of `canis-base` for a given release.
-
 ## Ruby version
 
-Both images support **Ruby 4.x** only. Services still on Ruby 3 need to finish that upgrade before adopting this base (or use an interim approach).
+This image supports **Ruby 4.x** only. Services still on Ruby 3 need to finish that upgrade before adopting this base.
 
 ## Examples
 
 See `examples/`:
 
-- `lupo.Dockerfile` — tools image + Lupo-only packages/scripts
-- `light-service.Dockerfile` — slim base + app-only bits
+- `lupo.Dockerfile` — base + Lupo-only packages/scripts (Percona, AWS CLI, metrics, …)
+- `light-service.Dockerfile` — base + app-only bits
 
 ## Maintenance
 
-- Change `Dockerfile` for core packages, Ruby, or shared scripts.
-- Change `Dockerfile.tools` when updating Percona Toolkit or AWS CLI.
+- Change `Dockerfile` when updating core packages, Ruby, or shared scripts.
+- Keep Percona, AWS CLI, and other ops tools in the apps that need them (primarily Lupo).
