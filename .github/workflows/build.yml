@@ -11,7 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
 
     steps:
       - name: Checkout
@@ -20,70 +19,13 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Compute temporary tag (for PR verification only)
-        id: temp
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            TEMP_TAG="pr-${{ github.event.pull_request.number }}-${{ github.sha }}"
-          else
-            TEMP_TAG="main-${{ github.sha }}"
-          fi
-          echo "temp_tag=$TEMP_TAG" >> $GITHUB_OUTPUT
-
-      # Build and push the slim base with a temporary tag.
-      # This makes the base image available in GHCR so the tools step can pull it
-      # via the build-arg (avoids local driver / local-tag visibility problems
-      # and the cache-export limitation of the docker driver).
-      - name: Build and push slim base (temporary tag)
+      - name: Build canis-base
         uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile
           platforms: linux/amd64
-          push: true
-          tags: |
-            ghcr.io/datacite/canis-base:${{ steps.temp.outputs.temp_tag }}
-            ghcr.io/datacite/canis-base:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      # Build the tools variant. It will resolve BASE_IMAGE from GHCR using the temp tag.
-      # We do not push the tools image here (verification only).
-      - name: Build tools variant
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile.tools
-          platforms: linux/amd64
           push: false
-          build-args: |
-            BASE_IMAGE=ghcr.io/datacite/canis-base:${{ steps.temp.outputs.temp_tag }}
+          tags: canis-base:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      # Always attempt to delete the temporary base image after the build/checks
-      # (whether the job passed or failed).
-      - name: Cleanup temporary base image
-        if: always()
-        run: |
-          TEMP_TAG="${{ steps.temp.outputs.temp_tag }}"
-          echo "Attempting to delete temporary tag: $TEMP_TAG"
-          # Find the version ID for this exact tag
-          VERSION_ID=$(gh api \
-            "/users/${{ github.repository_owner }}/packages/container/canis-base/versions" \
-            --jq ".[] | select(.metadata.container.tags | index(\"$TEMP_TAG\")) | .id" 2>/dev/null || echo "")
-          if [ -n "$VERSION_ID" ]; then
-            echo "Deleting version ID $VERSION_ID"
-            gh api -X DELETE \
-              "/users/${{ github.repository_owner }}/packages/container/canis-base/versions/$VERSION_ID" \
-              || echo "Warning: delete may have failed or insufficient permissions (manual cleanup may be needed in the GitHub UI)"
-          else
-            echo "No matching version found for tag $TEMP_TAG"
-          fi

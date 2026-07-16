@@ -41,16 +41,7 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "sha=${{ github.sha }}" >> $GITHUB_OUTPUT
 
-      - name: Cache Docker layers
-        uses: actions/cache@v4
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
-
-      # Build and push slim base with semantic + hash tags (GHCR only for now)
-      - name: Build and push slim base
+      - name: Build and push canis-base
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -61,22 +52,5 @@ jobs:
             ghcr.io/datacite/canis-base:latest
             ghcr.io/datacite/canis-base:${{ steps.version.outputs.version }}
             ghcr.io/datacite/canis-base:${{ steps.version.outputs.sha }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
-
-      # Build and push tools variant on top of the exact base SHA (GHCR only for now)
-      - name: Build and push tools variant
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile.tools
-          platforms: linux/amd64
-          push: true
-          tags: |
-            ghcr.io/datacite/canis-base-tools:latest
-            ghcr.io/datacite/canis-base-tools:${{ steps.version.outputs.version }}
-            ghcr.io/datacite/canis-base-tools:${{ steps.version.outputs.sha }}
-          build-args: |
-            BASE_IMAGE=ghcr.io/datacite/canis-base:${{ steps.version.outputs.sha }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

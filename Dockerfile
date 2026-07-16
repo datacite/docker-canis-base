@@ -1,9 +1,9 @@
 # syntax=docker/dockerfile:1.7
 #
-# DataCite Canis Base Image (slim core)
+# DataCite Canis Base Image
 #
-# This is the minimal shared base used by all services.
-# Heavy operational tools live in Dockerfile.tools.
+# Shared foundation for Canis Rails services.
+# Service-specific packages (Percona, AWS CLI, ImageMagick, etc.) stay in app Dockerfiles.
 
 FROM phusion/passenger-ruby40:3.1.6
 
