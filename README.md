@@ -12,7 +12,7 @@ Shared Docker image for DataCite Canis Rails services (Lupo, Levriero, Events, V
 
 - Keep the base to the **intersection** of shared needs across Canis services.
 - Service-specific packages and scripts stay in each app's Dockerfile (e.g. Lupo's Percona Toolkit and AWS CLI).
-- Match existing fleet contracts (SSH, Passenger env, NTP, Shoryuken guards) so adoption is a thin Dockerfile change.
+- Match existing format (SSH, Passenger env, NTP, Shoryuken guards) so adoption is a thin Dockerfile change.
 
 ## Quick start
 
@@ -48,7 +48,7 @@ Lupo and other services add only what they need after `FROM` (see `examples/`).
 - Baked shared config/scripts (see below)
 - Guarded Shoryuken runit service
 
-**Not in the base** (add in the app when needed): Percona Toolkit, AWS CLI, MySQL client headers, ImageMagick/graphics libs, Chrome, dockerize, migrate-on-boot scripts.
+**Not in the base** (add in the app when needed): Percona Toolkit, AWS CLI, MySQL client headers, ImageMagick/graphics libs, dockerize, migrate-on-boot scripts.
 
 ## Baked `vendor/docker/` files
 
@@ -63,16 +63,6 @@ Lupo and other services add only what they need after `FROM` (see `examples/`).
 
 **Overrides:** `COPY` your own file after `FROM` to replace a baked path. Keep service-only files in the app (`webapp.conf`, metrics, nginx templates, precompile, etc.).
 
-## Runtime env conventions
-
-| Variable | Role |
-|----------|------|
-| `PUBLIC_KEY` | SSH public key for root |
-| `PASSENGER_APP_ENV` | Overrides Passenger app env (default development via conf) |
-| `AWS_REGION` | Required for Shoryuken to start |
-| `DISABLE_QUEUE_WORKER` | If set (any non-empty value), Shoryuken does not start |
-| `SERVER_ROLE` | Used by app-owned migrate scripts (not the base) |
-
 ## Tagging
 
 Releases are driven by git tags. Tags typically include `latest`, the version tag, and the commit SHA. Prefer pinning apps to a version tag:
@@ -83,7 +73,7 @@ FROM ghcr.io/datacite/canis-base:1.2.3
 
 ## Ruby version
 
-This image supports **Ruby 4.x** only. Services still on Ruby 3 need to finish that upgrade before adopting this base.
+This image supports **Ruby 4.x** only.
 
 ## Examples
 

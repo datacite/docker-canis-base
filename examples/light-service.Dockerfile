@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 #
 # Example for a Canis service using only the slim core base
-# (e.g. events, levriero, sashimi, volpino — after Ruby 4)
+# (e.g. events, levriero, sashimi, volpino)
 # Base already provides: passenger/nginx, app_env, ntp, root SSH, guarded shoryuken
 
 FROM ghcr.io/datacite/canis-base:1.2.3
